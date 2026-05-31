@@ -1,0 +1,6 @@
+{
+  "name": "UNO Whose Turn?",
+  "description": "Smart UNO game companion for tracking player turns, scores, dealer, wildcards, and ESP32 camera integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
