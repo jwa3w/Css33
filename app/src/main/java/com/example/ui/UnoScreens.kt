@@ -2,6 +2,14 @@ package com.example.ui
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.window.Dialog
+import androidx.compose.foundation.Image
+import com.example.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -47,170 +55,398 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 // --- Screen 1: Welcome & Setup ---
+// Custom Components for the gorgeous interactive Retro Game GUI
+@Composable
+fun HamburgerButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(54.dp)
+            .shadow(3.dp, RoundedCornerShape(14.dp))
+            .clickable { onClick() }
+            .background(Color.White, RoundedCornerShape(14.dp))
+            .border(2.5.dp, Color.Black, RoundedCornerShape(14.dp))
+            .padding(12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.Black, RoundedCornerShape(2.dp)))
+            Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.Black, RoundedCornerShape(2.dp)))
+            Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.Black, RoundedCornerShape(2.dp)))
+        }
+    }
+}
+
+@Composable
+fun BubblyButton(
+    text: String,
+    startColor: Color,
+    endColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .shadow(4.dp, RoundedCornerShape(26.dp))
+            .clickable { onClick() }
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(startColor, endColor)
+                ),
+                shape = RoundedCornerShape(26.dp)
+            )
+            .border(3.dp, Color.Black, RoundedCornerShape(26.dp))
+            .padding(vertical = 12.dp, horizontal = 24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Shine bubble at top-left matching attached Page1
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 14.dp, top = 6.dp)
+                .size(width = 18.dp, height = 10.dp)
+                .background(Color.White.copy(alpha = 0.9f), CircleShape)
+        )
+
+        // Bold text with 3D black outline styling
+        Box(contentAlignment = Alignment.Center) {
+            val outlineOffset = 1.8.dp
+            // Render outline shadow in 4 directions
+            Text(
+                text = text,
+                color = Color.Black,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.offset(x = outlineOffset, y = outlineOffset)
+            )
+            Text(
+                text = text,
+                color = Color.Black,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.offset(x = -outlineOffset, y = outlineOffset)
+            )
+            Text(
+                text = text,
+                color = Color.Black,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.offset(x = outlineOffset, y = -outlineOffset)
+            )
+            Text(
+                text = text,
+                color = Color.Black,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.offset(x = -outlineOffset, y = -outlineOffset)
+            )
+            
+            // Foreground text
+            Text(
+                text = text,
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun WelcomeScreen(vm: GameViewModel) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121214))
     ) {
+        // 1. Beautiful scenic background of playing cards
+        Image(
+            painter = painterResource(id = R.drawable.img_purple_cards_bg),
+            contentDescription = "UNO Playing Cards Wallpaper Background",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // 2. Custom hamburger menu button in top-right
+        HamburgerButton(
+            onClick = { showMenu = true },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(24.dp)
+        )
+
+        // 3. Scrollable contents of the screen to support all sizes safely
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .statusBarsPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // UNO App Branding Header
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFFE00010))
-                    .border(4.dp, Color(0xFFFFC107), RoundedCornerShape(24.dp))
-                    .padding(horizontal = 40.dp, vertical = 20.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "UNO",
-                        color = Color.White,
-                        fontSize = 54.sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.Serif,
-                        letterSpacing = 2.sp
-                    )
-                    Text(
-                        text = "WHOSE TURN?",
-                        color = Color(0xFFFFC107),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 3.sp
-                    )
-                }
-            }
-
             Spacer(modifier = Modifier.height(30.dp))
 
+            // Centered High-Fidelity UNO Logo Graphic
+            Image(
+                painter = painterResource(id = R.drawable.img_uno_whose_turn_logo),
+                contentDescription = "UNO Whose Turn Logo",
+                modifier = Modifier
+                    .size(240.dp)
+                    .padding(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Subtitle label "CONNECT BY" in capitalized spaced text
             Text(
-                text = "Select Autonomous Play Mode",
-                color = Color.LightGray,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 1.sp
+                text = "CONNECT BY",
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 3.sp,
+                textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Mode Cards Grid
-            val modes = listOf(
-                Triple("Classic", "Original rules, turn prompts & smart load cell checks.", Color(0xFF4CAF50)),
-                Triple("Chaotic", "Injects random Gemini triggers & custom wildcard alerts.", Color(0xFFFF5722)),
-                Triple("Dual", "Heated 1v1 battle layout with fast turnaround pacing.", Color(0xFF2196F3)),
-                Triple("Speed", "Timer active! Players get 5s to play card or draw.", Color(0xFFFF9800))
+            // Bubbly Green Button: Screen Scan
+            BubblyButton(
+                text = "Screen Scan",
+                startColor = Color(0xFFB4FF1A), // glowing yellowish lime
+                endColor = Color(0xFF00CC2C),   // rich glossy emerald
+                onClick = { vm.navigateTo(3) }, // Navigates to player registration / scanning flow
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .height(72.dp)
+                    .testTag("initiate_match_btn")
             )
 
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                modes.forEach { (mode, desc, accent) ->
-                    val isSelected = vm.gameMode == mode
-                    Card(
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Bubbly Blue Button: Wi-Fi Select
+            BubblyButton(
+                text = "Wi-Fi Select",
+                startColor = Color(0xFF1AF2FF), // glowing turquoise-cyan
+                endColor = Color(0xFF0073E6),   // deep water blue
+                onClick = { vm.navigateTo(2) }, // Navigates to Screen 2: WiFi connector Setup
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .height(72.dp)
+                    .testTag("wifi_select_btn")
+            )
+
+            Spacer(modifier = Modifier.weight(1f, fill = false))
+            Spacer(modifier = Modifier.height(30.dp))
+
+            // High-Fidelity 3D-feeling desk scanner companion device
+            Image(
+                painter = painterResource(id = R.drawable.img_scanner_device),
+                contentDescription = "Autonomous Laser Scanning Hardware Dock",
+                modifier = Modifier
+                    .size(200.dp)
+                    .padding(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
+        }
+
+        // 4. Config panel dialogue sliding sheet
+        if (showMenu) {
+            Dialog(onDismissRequest = { showMenu = false }) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.95f)
+                        .fillMaxHeight(0.85f)
+                        .border(3.dp, Color.Black, RoundedCornerShape(24.dp)),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1F29))
+                ) {
+                    Column(
                         modifier = Modifier
-                            .width(160.dp)
-                            .height(115.dp)
-                            .clickable { vm.gameMode = mode },
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) Color(0xFF1A1D24) else Color(0xFF1E2129)
-                        ),
-                        border = if (isSelected) BorderStroke(2.dp, accent) else BorderStroke(1.dp, Color.Transparent),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                            .fillMaxSize()
+                            .padding(20.dp)
                     ) {
+                        // Header
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "GAME CONFIGURATION",
+                                color = Color(0xFFFFC107),
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp
+                            )
+                            IconButton(onClick = { showMenu = false }) {
+                                Icon(Icons.Filled.Close, contentDescription = "Close", tint = Color.White)
+                            }
+                        }
+
+                        Divider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 12.dp))
+
+                        // Scrollable Settings
                         Column(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(12.dp),
-                            verticalArrangement = Arrangement.SpaceBetween
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = mode,
-                                    color = Color.White,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .size(10.dp)
-                                        .background(accent, CircleShape)
-                                )
-                            }
+                            // 1. Play Mode Selection
                             Text(
-                                text = desc,
-                                color = Color.Gray,
-                                fontSize = 10.sp,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
+                                text = "Select Autonomous Play Mode",
+                                color = Color.LightGray,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            )
+
+                            val modes = listOf(
+                                Triple("Classic", "Original rules, turn prompts & smart load cell checks.", Color(0xFF4CAF50)),
+                                Triple("Chaotic", "Injects random Gemini triggers & custom wildcard alerts.", Color(0xFFFF5722)),
+                                Triple("Dual", "Heated 1v1 battle layout with fast turnaround pacing.", Color(0xFF2196F3)),
+                                Triple("Speed", "Timer active! Players get 5s to play card or draw.", Color(0xFFFF9800))
+                            )
+
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                modes.forEach { (mode, desc, accent) ->
+                                    val isSelected = vm.gameMode == mode
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { vm.gameMode = mode },
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = if (isSelected) Color(0xFF2B2D3A) else Color(0xFF14151C)
+                                        ),
+                                        border = if (isSelected) BorderStroke(2.dp, accent) else BorderStroke(1.dp, Color.Transparent),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(16.dp)
+                                                    .background(accent, CircleShape)
+                                            )
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = mode,
+                                                    color = Color.White,
+                                                    fontSize = 15.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    text = desc,
+                                                    color = Color.Gray,
+                                                    fontSize = 11.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 2. Target Score Selector
+                            Text(
+                                text = "Target Score Limit: ${vm.targetScoreLimit} pts",
+                                color = Color.White,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Slider(
+                                value = vm.targetScoreLimit.toFloat(),
+                                onValueChange = { vm.targetScoreLimit = it.toInt() },
+                                valueRange = 100f..1000f,
+                                steps = 8,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = Color(0xFFE00010),
+                                    activeTrackColor = Color(0xFFFFC107),
+                                    inactiveTrackColor = Color.DarkGray
+                                )
+                            )
+
+                            // 3. Navigation Shortcuts to other Screens
+                            Text(
+                                text = "System Directories & Tools",
+                                color = Color.LightGray,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            )
+
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                val links = listOf(
+                                    Triple("Registered Roster", Icons.Filled.People, 3),
+                                    Triple("Dealer Selection", Icons.Filled.Face, 4),
+                                    Triple("Wildcard Rules Setup", Icons.Filled.Rule, 5),
+                                    Triple("Hardware Calibration", Icons.Filled.SettingsSuggest, 6),
+                                    Triple("ESP32 Sensor Logger", Icons.Filled.Analytics, 9),
+                                    Triple("Voice Prompts Config", Icons.Filled.VolumeUp, 10),
+                                    Triple("Match History Logs", Icons.Filled.History, 11),
+                                    Triple("Platform Settings", Icons.Filled.Settings, 12),
+                                    Triple("Champions Hall of Fame", Icons.Filled.Stars, 13)
+                                )
+
+                                links.forEach { (label, icon, targetScreen) ->
+                                    Button(
+                                        onClick = {
+                                            showMenu = false
+                                            vm.navigateTo(targetScreen)
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2E3E)),
+                                        shape = RoundedCornerShape(10.dp),
+                                        modifier = Modifier.fillMaxWidth().height(44.dp),
+                                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                                    ) {
+                                        Icon(icon, contentDescription = label, tint = Color.White, modifier = Modifier.size(18.dp))
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text(label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Icon(Icons.Filled.ArrowForward, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(14.dp))
+                                    }
+                                }
+                            }
+                        }
+
+                        Button(
+                            onClick = { showMenu = false },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .padding(top = 8.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = "CLOSE CONFIG",
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
                             )
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            // Score Limit configuration
-            Text(
-                text = "Target Score Limit: ${vm.targetScoreLimit} pts",
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Slider(
-                value = vm.targetScoreLimit.toFloat(),
-                onValueChange = { vm.targetScoreLimit = it.toInt() },
-                valueRange = 100f..1000f,
-                steps = 8,
-                colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFFE00010),
-                    activeTrackColor = Color(0xFFFFC107),
-                    inactiveTrackColor = Color.DarkGray
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-            )
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Button(
-                onClick = { vm.navigateTo(2) },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp)
-                    .testTag("initiate_match_btn"),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = "INITIATE DEVICE SCAN",
-                    color = Color.Black,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 16.sp,
-                    letterSpacing = 1.sp
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.Filled.Camera, contentDescription = "Scan", tint = Color.Black)
-            }
         }
     }
 }
+
 
 // --- Screen 2: Wi-Fi Setup & QR Scanner ---
 @Composable
